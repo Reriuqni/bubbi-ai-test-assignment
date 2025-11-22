@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm run rm:dist && webpack --progress --mode=development --config webpack.config.js",
+    "build2": "webpack --progress --mode=development --config webpack.config.js",
     "rm:dist": "rimraf dist"
   },
   "author": "xxxx",

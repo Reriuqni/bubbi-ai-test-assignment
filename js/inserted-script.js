@@ -1,7 +1,21 @@
-document.addEventListener('DOMContentLoaded', (e) => init());
+import { getPopUpStyles } from './random-messages/getPopUpStyles';
+import { initRandomMessages } from './random-messages/initRandomMessages';
+
+document.onreadystatechange = () => {
+  init();
+  initRandomMessages();
+};
 
 // Rozetka.com.ua, product page
 const SELECTOR = 'rz-gallery-main-content-image img';
+
+const STYLES = `
+    font-size: 18px;
+    font-weight: bold;
+    color: red;
+    position: absolute;
+    bottom: 20px;
+`;
 
 function init() {
   const _selectors = document.querySelectorAll(SELECTOR);
@@ -15,9 +29,15 @@ function init() {
   }
 
   _selectors.forEach((i) => {
-    i.insertAdjacentHTML(
-      'afterend',
-      '<div style="font-size: 20px; font-weight: bold; color: red;">My test message</div>'
-    );
+    i.insertAdjacentHTML('afterend', getHTML());
   });
+}
+
+function getHTML() {
+  return `
+    ${getPopUpStyles()}
+    <div style="${STYLES}">
+      <span id="infoTrigger">Show product message again</span>
+    </div>
+  `;
 }
