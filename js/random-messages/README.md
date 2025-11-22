@@ -1,0 +1,1 @@
+- By each click on the message id="infoTrigger", show one PopUp. Closing by timeout or criss-cross button
