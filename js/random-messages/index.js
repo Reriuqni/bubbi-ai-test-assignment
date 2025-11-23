@@ -1,1 +1,1 @@
-import './initMainScript.js';
+import './components/initEntryEventListeners.js';

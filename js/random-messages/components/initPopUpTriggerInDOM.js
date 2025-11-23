@@ -1,14 +1,12 @@
 import { POPUP_TRIGGER_TEXT_ID, SELECTOR_TO_INSERT } from './constants.js';
+import { initRandomMessages } from './randomMessages/index.js';
 import {
   BUBBI_STYLED_MESSAGE_ERROR,
   BUBBI_STYLED_MESSAGE_SUCCESS,
   wrapConsoleLog,
 } from './tools.js';
-import { initRandomMessages } from './v2/index.js';
 
-let initRandomMessagesCalled = false;
-
-export function tryInitPopUpTriggerInDOM({ srcCall = 'unknown src' } = {}) {
+export function initPopUpTriggerInDOM({ srcCall = 'unknown src' } = {}) {
   wrapConsoleLog({ msg: 'check and try insert Popups by ' + srcCall });
 
   const txtSelector = SELECTOR_TO_INSERT + ' #' + POPUP_TRIGGER_TEXT_ID;
@@ -23,8 +21,6 @@ export function tryInitPopUpTriggerInDOM({ srcCall = 'unknown src' } = {}) {
 
     initTriggerText();
     initRandomMessages();
-    // !initRandomMessagesCalled && initRandomMessages();
-    // initRandomMessagesCalled = true;
 
     wrapConsoleLog({
       msg: `popups inserted by ${srcCall} call.`,
