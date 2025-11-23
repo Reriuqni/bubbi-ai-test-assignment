@@ -1,5 +1,7 @@
 import './initRandomMessages.scss';
 
+import { POPUP_TRIGGER_TEXT_ID } from '../../constants.js';
+
 // --- Configuration Data ---
 const RANDOM_MESSAGES = [
   'Great choice! You are the best',
@@ -8,20 +10,27 @@ const RANDOM_MESSAGES = [
   'Random response activated!',
   'Enjoy the information!',
   'Success! Mission accomplished.',
+  'Another message added to the stack!',
+  'Check out this cool new feature!',
 ];
 
 // Using simple unicode characters as random icons
 const RANDOM_ICONS = ['🌟', '💡', '🚀', '🎉', '💖', '✅', '🥳', '✨'];
 
-let popupTimeoutId = null; // Stores the ID for the 5-second auto-close timer
+// let popupTimeoutId = null; // Stores the ID for the 5-second auto-close timer
+// --- Global State ---
+let infoTrigger = undefined;
+const TIMEOUT_DURATION = 5000; // 5 seconds for auto-close
+const POPUP_TRANSITION_TIME = 300; // CSS transition time
+let activePopups = []; // Array to store {element, timeoutId} objects
 
 export function initRandomMessages() {
-  // --- Global State and Elements ---
-  const infoTrigger = document.getElementById('infoTrigger');
-  // let popupTimeoutId = null; // Stores the ID for the 5-second auto-close timer
+  infoTrigger = document.getElementById(POPUP_TRIGGER_TEXT_ID);
 
   // Attach the click event listener to the trigger text
-  infoTrigger.addEventListener('click', showPopup);
+  infoTrigger.addEventListener('click', showPopupStack);
+
+  showPopupStack();
 }
 
 // --- Helper Functions ---
@@ -37,91 +46,140 @@ function getRandomItem(arr) {
 }
 
 /**
- * Closes the pop-up and clears the auto-close timeout.
+ * Generates a random number of pop-ups (from 1 to 5).
+ * @returns {number} The random count.
  */
-function closePopup() {
-  const existingPopup = document.querySelector('.custom-popup');
+function getRandomPopupCount() {
+  return Math.floor(Math.random() * 5) + 1; // 1 to 5
+}
 
-  // 1. Clear the automatic close timer
-  if (popupTimeoutId) {
-    clearTimeout(popupTimeoutId);
-    popupTimeoutId = null;
-  }
-
-  if (existingPopup) {
-    // 2. Remove the 'show' class for the fade-out effect
-    existingPopup.classList.remove('show');
-
-    // 3. Wait for the transition to finish, then remove the element from DOM
-    setTimeout(() => {
-      existingPopup.remove();
-    }, 300); // Matches the CSS transition time
+/**
+ * Toggles the visibility of the trigger text.
+ * @param {boolean} isVisible - Whether the trigger should be visible.
+ */
+function toggleTriggerVisibility(isVisible) {
+  // return;
+  if (isVisible) {
+    infoTrigger.classList.add('visible');
+  } else {
+    infoTrigger.classList.remove('visible');
   }
 }
 
 /**
- * Creates and displays the pop-up with random content.
+ * Closes a specific pop-up, clears the timer, and checks if the trigger can be shown.
+ * @param {HTMLElement} popupElement - The pop-up element to close.
  */
-function showPopup() {
-  // Check if a pop-up is already visible (prevents double pop-ups)
-  if (document.querySelector('.custom-popup')) {
-    // If it exists, we close the old one before making a new one
-    closePopup();
-    return;
+function closePopup(popupElement) {
+  // 1. Find and clear the timer
+  const index = activePopups.findIndex((p) => p.element === popupElement);
+  if (index !== -1) {
+    clearTimeout(activePopups[index].timeoutId);
+    // Remove from the active array
+    activePopups.splice(index, 1);
   }
 
-  // --- 1. Get Random Content ---
-  const randomMessage = getRandomItem(RANDOM_MESSAGES);
-  const randomIcon = getRandomItem(RANDOM_ICONS);
+  // 2. Fade-out animation
+  popupElement.classList.remove('show');
 
-  // --- 2. Create Elements ---
+  // 3. Remove from DOM after transition completion
+  setTimeout(() => {
+    popupElement.remove();
+
+    // 4. Check: If no active pop-ups remain, show the trigger
+    if (activePopups.length === 0) {
+      toggleTriggerVisibility(true);
+    }
+  }, POPUP_TRANSITION_TIME);
+}
+
+/**
+ * Creates a single pop-up element.
+ * @param {string} message - The message text.
+ * @param {string} icon - The icon.
+ * @returns {HTMLElement} The created pop-up element.
+ */
+function createPopupElement(message, icon) {
   const popup = document.createElement('div');
   popup.className = 'custom-popup';
 
-  const icon = document.createElement('span');
-  icon.className = 'popup-icon';
-  icon.textContent = randomIcon;
+  const iconEl = document.createElement('span');
+  iconEl.className = 'popup-icon';
+  iconEl.textContent = icon;
 
-  const message = document.createElement('span');
-  message.textContent = randomMessage;
+  const messageEl = document.createElement('span');
+  messageEl.textContent = message;
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'close-btn';
   closeBtn.textContent = '×';
 
-  // --- 3. Assemble and Attach ---
-  popup.appendChild(icon);
-  popup.appendChild(message);
+  popup.appendChild(iconEl);
+  popup.appendChild(messageEl);
   popup.appendChild(closeBtn);
 
-  document.body.appendChild(popup);
+  // Add event listener for the close button
+  closeBtn.addEventListener('click', () => closePopup(popup));
 
-  // --- 4. Position the Pop-up ---
+  return popup;
+}
+
+/**
+ * Creates and displays a stack of pop-ups (1 to 5).
+ */
+function showPopupStack() {
+  // If pop-ups already exist, ignore the click
+  if (activePopups.length > 0) {
+    return;
+  }
+
+  // 1. Hide the trigger
+  toggleTriggerVisibility(false);
+
+  // 2. Determine the number of pop-ups
+  const count = getRandomPopupCount();
+
+  // 3. Determine the initial position of the first pop-up (above the trigger)
   const rect = infoTrigger.getBoundingClientRect();
-  // Wait for the popup to be in the DOM to get correct width/height before positioning
 
-  // This positioning tries to place the popup right above the trigger element.
-  // Using a short delay to ensure offsetHeight/offsetWidth are calculated correctly.
+  // Use a timeout to allow the browser time for rendering before calculating
+  // the position of subsequent elements.
   setTimeout(() => {
-    const popupWidth = popup.offsetWidth;
-    const popupHeight = popup.offsetHeight;
+    let currentOffsetTop = rect.top + window.scrollY; // Initial position (top edge of trigger)
 
-    // Vertical: Place 10px above the trigger
-    popup.style.top = `${rect.top + window.scrollY - popupHeight - 10}px`;
-    // Horizontal: Center the pop-up on the trigger
-    popup.style.left = `${
-      rect.left + window.scrollX + rect.width / 2 - popupWidth / 2
-    }px`;
+    for (let i = 0; i < count; i++) {
+      const randomMessage = getRandomItem(RANDOM_MESSAGES);
+      const randomIcon = getRandomItem(RANDOM_ICONS);
+      const popup = createPopupElement(randomMessage, randomIcon);
 
-    // Add 'show' class to trigger the CSS fade-in
-    popup.classList.add('show');
+      document.body.appendChild(popup);
+
+      const popupWidth = popup.offsetWidth;
+      const popupHeight = popup.offsetHeight;
+
+      // 4. Calculate vertical position
+      // Position of the first pop-up (i=0) - at the trigger's location, offset upwards.
+      // Subsequent pop-ups are shifted vertically upwards by the height of the previous one + a small margin (10px).
+      if (i === 0) {
+        // First pop-up: 10px above the trigger
+        currentOffsetTop = rect.top + window.scrollY - popupHeight + 40;
+      } else {
+        // Each subsequent pop-up: 10px above the previous one
+        currentOffsetTop -= popupHeight + 10;
+      }
+
+      // 5. Calculate horizontal position (center above the trigger)
+      popup.style.left = `${
+        rect.left + window.scrollX + rect.width / 2 - popupWidth / 2
+      }px`;
+      popup.style.top = `${currentOffsetTop}px`;
+
+      // 6. Display
+      popup.classList.add('show');
+
+      // 7. Setup auto-close and save state
+      const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
+      activePopups.push({ element: popup, timeoutId: timeoutId });
+    }
   }, 1);
-
-  // --- 5. Setup Timers and Events ---
-
-  // Auto-Close Timer (5 seconds)
-  popupTimeoutId = setTimeout(closePopup, 5000); // 5000ms = 5 seconds
-
-  // Close Button Event
-  closeBtn.addEventListener('click', closePopup);
 }
