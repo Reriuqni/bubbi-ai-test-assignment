@@ -1,13 +1,16 @@
 import { initRandomMessages } from './random-messages/v2/index.js';
 
 let IS_INIT_TRY = false;
+console.log('Inserted script loaded');
 
 document.addEventListener('DOMContentLoaded', tryInit);
 document.addEventListener('load', tryInit);
 document.onreadystatechange = () => tryInit();
 
 function tryInit() {
+  console.log('tryInit called');
   if (!IS_INIT_TRY) {
+    console.log('Initializing tryInit script...');
     init();
     initRandomMessages();
     IS_INIT_TRY = true;
