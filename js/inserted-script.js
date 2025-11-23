@@ -1,12 +1,20 @@
-import { getPopUpStyles } from './random-messages/getPopUpStyles';
 import { initRandomMessages } from './random-messages/v1/initRandomMessages';
 
-document.onreadystatechange = () => {
-  init();
-  initRandomMessages();
-};
+let IS_INIT_TRY = false;
 
-// Rozetka.com.ua, product page
+document.addEventListener('DOMContentLoaded', tryInit);
+document.addEventListener('load', tryInit);
+document.onreadystatechange = () => tryInit();
+
+function tryInit() {
+  if (!IS_INIT_TRY) {
+    init();
+    initRandomMessages();
+    IS_INIT_TRY = true;
+  }
+}
+
+// rozetka.com.ua, on any of the product page
 const SELECTOR = 'rz-gallery-main-content-image img';
 
 const STYLES = `
@@ -25,6 +33,10 @@ function init() {
       'Bubbi task: can not find %O to insert HTML\nExit script',
       SELECTOR
     );
+
+    // Wait, maybe next time selector will be available
+    IS_INIT_TRY = false;
+
     return;
   }
 
@@ -35,7 +47,6 @@ function init() {
 
 function getHTML() {
   return `
-    ${getPopUpStyles()}
     <div style="${STYLES}">
       <span id="infoTrigger">Show product message again</span>
     </div>
