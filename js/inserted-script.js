@@ -1,5 +1,5 @@
 import { getPopUpStyles } from './random-messages/getPopUpStyles';
-import { initRandomMessages } from './random-messages/initRandomMessages';
+import { initRandomMessages } from './random-messages/v1/initRandomMessages';
 
 document.onreadystatechange = () => {
   init();

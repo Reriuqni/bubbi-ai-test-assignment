@@ -1,3 +1,5 @@
+import './initRandomMessages.scss';
+
 // --- Configuration Data ---
 const RANDOM_MESSAGES = [
   'Great choice! You are the best',
