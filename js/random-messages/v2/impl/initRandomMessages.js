@@ -190,7 +190,6 @@ function showPopupStack() {
       popup.style.top = `${currentOffsetTop}px`;
 
       // 6. Display
-      // popup.classList.add('show');
       setTimeout(() => {
         popup.classList.add('show');
 
@@ -198,10 +197,6 @@ function showPopupStack() {
         const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
         activePopups.push({ element: popup, timeoutId: timeoutId });
       }, 1000 * i); // Staggered appearance
-
-      // 7. Setup auto-close and save state
-      // const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
-      // activePopups.push({ element: popup, timeoutId: timeoutId });
     }
   }, 1);
 }
