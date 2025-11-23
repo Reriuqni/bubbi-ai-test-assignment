@@ -1,4 +1,4 @@
-import { initRandomMessages } from './random-messages/v1/initRandomMessages';
+import { initRandomMessages } from './random-messages/v2/index.js';
 
 let IS_INIT_TRY = false;
 
