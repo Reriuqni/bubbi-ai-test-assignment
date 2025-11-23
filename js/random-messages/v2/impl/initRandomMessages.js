@@ -23,14 +23,29 @@ let infoTrigger = undefined;
 const TIMEOUT_DURATION = 5000; // 5 seconds for auto-close
 const POPUP_TRANSITION_TIME = 300; // CSS transition time
 let activePopups = []; // Array to store {element, timeoutId} objects
+let initShowTimes = 0; // To track if it's the first initialization
+
+document.addEventListener('click', (e) => {
+  // Attach the click event listener to the trigger text
+  if (e.target.closest('#' + POPUP_TRIGGER_TEXT_ID)) {
+    showPopupStack();
+  }
+});
 
 export function initRandomMessages() {
   infoTrigger = document.getElementById(POPUP_TRIGGER_TEXT_ID);
 
-  // Attach the click event listener to the trigger text
-  infoTrigger.addEventListener('click', showPopupStack);
+  // On first initialization, always show the pop-up stack
+  if (initShowTimes === 0) {
+    showPopupStack();
+  }
 
-  showPopupStack();
+  // On subsequent initializations, if no pop-ups are active, show the trigger
+  if (initShowTimes > 0 && activePopups.length === 0) {
+    toggleTriggerVisibility(true);
+  }
+
+  initShowTimes++;
 }
 
 // --- Helper Functions ---
@@ -175,11 +190,18 @@ function showPopupStack() {
       popup.style.top = `${currentOffsetTop}px`;
 
       // 6. Display
-      popup.classList.add('show');
+      // popup.classList.add('show');
+      setTimeout(() => {
+        popup.classList.add('show');
+
+        // 7. Setup auto-close and save state
+        const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
+        activePopups.push({ element: popup, timeoutId: timeoutId });
+      }, 1000 * i); // Staggered appearance
 
       // 7. Setup auto-close and save state
-      const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
-      activePopups.push({ element: popup, timeoutId: timeoutId });
+      // const timeoutId = setTimeout(() => closePopup(popup), TIMEOUT_DURATION);
+      // activePopups.push({ element: popup, timeoutId: timeoutId });
     }
   }, 1);
 }

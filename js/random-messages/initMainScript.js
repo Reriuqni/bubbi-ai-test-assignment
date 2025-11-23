@@ -30,11 +30,13 @@ const intervalId = setInterval(() => {
   intervalCalledTimes++;
 }, intervalGetMs());
 
+// Interval increases by 0.1 seconds each time
 function intervalGetMs() {
   const ms = 100 * (intervalCalledTimes + 1);
   return ms;
 }
 
+// Final attempt after timeout
 setTimeout(() => {
   clearInterval(intervalId);
   tryInitPopUpTriggerInDOM({ srcCall: INIT_AFTER_TIMEOUT });
